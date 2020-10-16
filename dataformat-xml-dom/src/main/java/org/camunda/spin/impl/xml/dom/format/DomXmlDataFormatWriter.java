@@ -16,16 +16,18 @@
  */
 package org.camunda.spin.impl.xml.dom.format;
 
+import java.io.Reader;
 import java.io.Writer;
-
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
+import javax.xml.transform.stream.StreamSource;
+import org.camunda.spin.impl.util.SpinIoUtil;
 import org.camunda.spin.impl.xml.dom.DomXmlLogger;
 import org.camunda.spin.spi.DataFormatWriter;
 import org.camunda.spin.xml.SpinXmlElementException;
@@ -70,7 +72,10 @@ public class DomXmlDataFormatWriter implements DataFormatWriter {
   protected Transformer getTransformer() {
     TransformerFactory transformerFactory = domXmlDataFormat.getTransformerFactory();
     try {
-      Transformer transformer = transformerFactory.newTransformer();
+      // TODO: consider using javax.xml.transform.Templates for efficiency and thread safety.
+      Reader xslt = SpinIoUtil.classpathResourceAsReader("org/camunda/spin/impl/xml/dom/format/strip-space.xsl");
+      Source source = new StreamSource(xslt);
+      Transformer transformer = transformerFactory.newTransformer(source);
       transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
       transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
