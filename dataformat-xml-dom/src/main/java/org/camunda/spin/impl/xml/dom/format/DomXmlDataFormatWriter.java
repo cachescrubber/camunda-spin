@@ -16,10 +16,12 @@
  */
 package org.camunda.spin.impl.xml.dom.format;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -37,11 +39,12 @@ import org.w3c.dom.Node;
  * A writer for XML DOM.
  *
  * @author Daniel Meyer
- *
  */
 public class DomXmlDataFormatWriter implements DataFormatWriter {
 
   protected static final DomXmlLogger LOG = DomXmlLogger.XML_DOM_LOGGER;
+
+  private static final String STRIP_SPACE_XSL = "org/camunda/spin/impl/xml/dom/format/strip-space.xsl";
 
   protected DomXmlDataFormat domXmlDataFormat;
 
@@ -57,14 +60,58 @@ public class DomXmlDataFormatWriter implements DataFormatWriter {
     Node node = (Node) input;
     DOMSource domSource = new DOMSource(node);
     try {
-      getTransformer().transform(domSource, streamResult);
+      if (domXmlDataFormat.isPrettyPrint()) {
+        getFormattingTransformer().transform(domSource, streamResult);
+      } else {
+        getTransformer().transform(domSource, streamResult);
+      }
     } catch (TransformerException e) {
       throw LOG.unableToTransformElement(node, e);
     }
   }
 
+  protected Templates formattingTemplates = null;
+
   /**
-   * Returns a configured transformer to write XML.
+   * Return a {@link Templates} instance for the strip-spaces.xsl stylesheet.
+   * The Templates instance is initialized lazily in order to use the configured
+   * {@link TransformerFactory} from the {@link DomXmlDataFormat}.
+   *
+   * @return the templates instance for strip-spaces.xsl.
+   */
+  protected synchronized Templates getFormattingTemplates() {
+    if (null == formattingTemplates) {
+      TransformerFactory transformerFactory = domXmlDataFormat.getTransformerFactory();
+      try (Reader xslt = SpinIoUtil.classpathResourceAsReader(STRIP_SPACE_XSL)) {
+        Source source = new StreamSource(xslt);
+        formattingTemplates = transformerFactory.newTemplates(source);
+      } catch (TransformerConfigurationException | IOException e) {
+        LOG.unableToCreateTransformer(e);
+      }
+    }
+    return formattingTemplates;
+  }
+
+  /**
+   * Returns a configured transformer to write XML and apply indentation (pretty-print) to the xml.
+   *
+   * @return the XML configured transformer
+   * @throws SpinXmlElementException if no new transformer can be created
+   */
+  protected Transformer getFormattingTransformer() {
+    try {
+      Transformer transformer = getFormattingTemplates().newTransformer();
+      transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+      return transformer;
+    } catch (TransformerConfigurationException e) {
+      throw LOG.unableToCreateTransformer(e);
+    }
+  }
+
+  /**
+   * Returns a configured transformer to write XML as is.
    *
    * @return the XML configured transformer
    * @throws SpinXmlElementException if no new transformer can be created
@@ -72,16 +119,10 @@ public class DomXmlDataFormatWriter implements DataFormatWriter {
   protected Transformer getTransformer() {
     TransformerFactory transformerFactory = domXmlDataFormat.getTransformerFactory();
     try {
-      // TODO: consider using javax.xml.transform.Templates for efficiency and thread safety.
-      Reader xslt = SpinIoUtil.classpathResourceAsReader("org/camunda/spin/impl/xml/dom/format/strip-space.xsl");
-      Source source = new StreamSource(xslt);
-      Transformer transformer = transformerFactory.newTransformer(source);
+      Transformer transformer = transformerFactory.newTransformer();
       transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-      transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
       return transformer;
-    }
-    catch (TransformerConfigurationException e) {
+    } catch (TransformerConfigurationException e) {
       throw LOG.unableToCreateTransformer(e);
     }
   }
