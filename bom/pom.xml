@@ -45,9 +45,9 @@
   </dependencyManagement>
 
   <scm>
-    <url>https://github.com/camunda/camunda-spin</url>
-    <connection>scm:git:git@github.com:camunda/camunda-spin.git</connection>
-    <developerConnection>scm:git:git@github.com:camunda/camunda-spin.git</developerConnection>
+    <url>https://github.com/cachescrubber/camunda-spin</url>
+    <connection>scm:git:git@github.com:cachescrubber/camunda-spin.git</connection>
+    <developerConnection>scm:git:git@github.com:cachescrubber/camunda-spin.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
