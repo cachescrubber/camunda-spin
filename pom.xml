@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.camunda.spin</groupId>
     <artifactId>camunda-spin-bom</artifactId>
-    <version>1.11.1.private-SNAPSHOT</version>
+    <version>1.11.1.private</version>
     <relativePath>bom</relativePath>
   </parent>
 
@@ -179,7 +179,7 @@
     <url>https://github.com/cachescrubber/camunda-spin</url>
     <connection>scm:git:git@github.com:cachescrubber/camunda-spin.git</connection>
     <developerConnection>scm:git:git@github.com:cachescrubber/camunda-spin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>camunda-spin-root-1.11.1.private</tag>
   </scm>
 
 </project>
