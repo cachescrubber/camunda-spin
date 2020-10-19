@@ -17,7 +17,7 @@
 package org.camunda.spin.impl.xml.dom.format;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 import java.io.Writer;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -29,7 +29,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import org.camunda.spin.impl.util.SpinIoUtil;
 import org.camunda.spin.impl.xml.dom.DomXmlLogger;
 import org.camunda.spin.spi.DataFormatWriter;
 import org.camunda.spin.xml.SpinXmlElementException;
@@ -82,9 +81,11 @@ public class DomXmlDataFormatWriter implements DataFormatWriter {
   protected synchronized Templates getFormattingTemplates() {
     if (null == formattingTemplates) {
       TransformerFactory transformerFactory = domXmlDataFormat.getTransformerFactory();
-      try (Reader xslt = SpinIoUtil.classpathResourceAsReader(STRIP_SPACE_XSL)) {
-        Source source = new StreamSource(xslt);
-        formattingTemplates = transformerFactory.newTemplates(source);
+      try {
+        try (InputStream xslIn = Thread.currentThread().getContextClassLoader().getResourceAsStream(STRIP_SPACE_XSL)) {
+          Source xslt = new StreamSource(xslIn);
+          formattingTemplates = transformerFactory.newTemplates(xslt);
+        }
       } catch (TransformerConfigurationException | IOException e) {
         LOG.unableToCreateTransformer(e);
       }
