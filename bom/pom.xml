@@ -11,7 +11,7 @@
 
   <groupId>org.camunda.spin</groupId>
   <artifactId>camunda-spin-bom</artifactId>
-  <version>1.11.1.private</version>
+  <version>1.11.2.private-SNAPSHOT</version>
   <name>camunda spin - bom</name>
   <packaging>pom</packaging>
 
@@ -48,7 +48,7 @@
     <url>https://github.com/cachescrubber/camunda-spin</url>
     <connection>scm:git:git@github.com:cachescrubber/camunda-spin.git</connection>
     <developerConnection>scm:git:git@github.com:cachescrubber/camunda-spin.git</developerConnection>
-    <tag>camunda-spin-root-1.11.1.private</tag>
+    <tag>HEAD</tag>
   </scm>
 
 </project>
